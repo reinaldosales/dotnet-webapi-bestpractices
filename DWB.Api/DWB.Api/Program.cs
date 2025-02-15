@@ -4,12 +4,16 @@ using DWB.Api.Repositories;
 using DWB.Api.Repositories.Abstractions;
 using DWB.Api.Service;
 using DWB.Api.Validators;
+using Elastic.Apm.NetCoreAll;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Configuration;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAllElasticApm();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
