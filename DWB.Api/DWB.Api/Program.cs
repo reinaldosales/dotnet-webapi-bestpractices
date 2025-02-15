@@ -3,6 +3,7 @@ using DWB.Api.Models;
 using DWB.Api.Repositories;
 using DWB.Api.Repositories.Abstractions;
 using DWB.Api.Service;
+using DWB.Api.Validators;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -68,13 +69,19 @@ app.MapPost("api/v1/authentication", async (Guid id, IUserRepository userReposit
     return Results.Unauthorized();
 });
 
-app.MapPost("api/v1/user", async (CreateUserModel model, IUserRepository userRepository) =>
+app.MapPost("api/v1/user", async (CreateUserRequest model, IUserRepository userRepository) =>
 {
+    var validator = new CreateUserValidator();
+
+    var result = await validator.ValidateAsync(model);
+
+    if (!result.IsValid)
+        return Results.ValidationProblem(result.ToDictionary());
+
     var user = await userRepository.Create(model);
 
     return Results.Created();
 })
-.RequireAuthorization()
 .WithName("CreateUser")
 .WithOpenApi();
 

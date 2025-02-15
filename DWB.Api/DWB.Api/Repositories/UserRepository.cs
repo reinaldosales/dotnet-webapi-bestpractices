@@ -10,7 +10,7 @@ public class UserRepository(AppDbContext appDbContext) : IUserRepository
 {
     public AppDbContext _context { get; } = appDbContext;
 
-    public async Task<User> Create(CreateUserModel model)
+    public async Task<User> Create(CreateUserRequest model)
     {
 
         var user = User.CreateUser(model.Username, model.Password);
