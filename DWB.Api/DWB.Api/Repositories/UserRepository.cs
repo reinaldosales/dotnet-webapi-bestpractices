@@ -21,9 +21,19 @@ public class UserRepository(AppDbContext appDbContext) : IUserRepository
         return user;
     }
 
-    public async Task<IEnumerable<User>> GetAll()
-        => await _context.Users.ToListAsync();
+    public async Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize)
+        => await _context.Users
+        .AsNoTracking()
+        .Skip(pageIndex * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
 
     public async Task<User> GetById(Guid id)
-        => await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+        => await _context.Users
+        .AsNoTracking()
+        .FirstOrDefaultAsync(x => x.Id == id);
+
+    public async Task<User> GetByUsername(string username)
+        => await _context.Users
+        .FirstOrDefaultAsync(x => x.Username == username);
 }

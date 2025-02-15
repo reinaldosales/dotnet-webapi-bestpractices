@@ -3,12 +3,11 @@ using DWB.Api.Models;
 using DWB.Api.Repositories;
 using DWB.Api.Repositories.Abstractions;
 using DWB.Api.Service;
+using DWB.Api.Utils;
 using DWB.Api.Validators;
-using Elastic.Apm.NetCoreAll;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Configuration;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,9 +62,9 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapPost("api/v1/authentication", async (Guid id, IUserRepository userRepository) =>
+app.MapPost("api/v1/authentication", async (string username, IUserRepository userRepository) =>
 {
-    var user = await userRepository.GetById(id);
+    var user = await userRepository.GetByUsername(username);
 
     if (user is not null)
         return Results.Ok(JwtBearerService.GenerateToken(user, secretKey));
@@ -89,9 +88,9 @@ app.MapPost("api/v1/user", async (CreateUserRequest model, IUserRepository userR
 .WithName("CreateUser")
 .WithOpenApi();
 
-app.MapGet("api/v1/user", async (IUserRepository userRepository) =>
+app.MapGet("api/v1/user", async (IUserRepository userRepository, int pageIndex = 0, int pageSize = 20) =>
 {
-    var users = await userRepository.GetAll();
+    var users = await userRepository.GetAll(pageIndex, pageSize);
 
     return Results.Ok(users);
 })
@@ -99,11 +98,14 @@ app.MapGet("api/v1/user", async (IUserRepository userRepository) =>
 .WithName("GetAll")
 .WithOpenApi();
 
-app.MapGet("api/v1/user/{id:guid}", async (Guid id, IUserRepository userRepository) =>
+app.MapGet("api/v1/user/{username}", async (string username, IUserRepository userRepository) =>
 {
-    var user = await userRepository.GetById(id);
+    var user = await userRepository.GetByUsername(username);
 
-    return Results.Ok(user);
+    if(user is not null)
+        return Results.Ok(user);
+
+    return Results.NotFound();
 })
 .RequireAuthorization()
 .WithName("GetById")
