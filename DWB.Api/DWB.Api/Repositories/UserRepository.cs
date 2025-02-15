@@ -2,6 +2,7 @@
 using DWB.Api.Entities;
 using DWB.Api.Models;
 using DWB.Api.Repositories.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace DWB.Api.Repositories;
 
@@ -19,4 +20,10 @@ public class UserRepository(AppDbContext appDbContext) : IUserRepository
 
         return user;
     }
+
+    public async Task<IEnumerable<User>> GetAll()
+        => await _context.Users.ToListAsync();
+
+    public async Task<User> GetById(Guid id)
+        => await _context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 }

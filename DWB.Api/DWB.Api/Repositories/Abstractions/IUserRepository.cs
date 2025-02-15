@@ -6,4 +6,6 @@ namespace DWB.Api.Repositories.Abstractions;
 public interface IUserRepository
 {
     Task<User> Create(CreateUserModel model);
+    Task<IEnumerable<User>> GetAll();
+    Task<User> GetById(Guid id);
 }

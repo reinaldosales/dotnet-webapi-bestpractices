@@ -1,9 +1,12 @@
-using Asp.Versioning;
 using DWB.Api.Context;
 using DWB.Api.Models;
 using DWB.Api.Repositories;
 using DWB.Api.Repositories.Abstractions;
+using DWB.Api.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +23,28 @@ builder.Services.AddApiVersioning(options =>
     options.AssumeDefaultVersionWhenUnspecified = true;
 });
 
+var secretKey = builder.Configuration.GetSection("SecretKey")?.Value;
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -30,13 +55,48 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapPost("api/v1/authentication", async (Guid id, IUserRepository userRepository) =>
+{
+    var user = await userRepository.GetById(id);
+
+    if (user is not null)
+        return Results.Ok(JwtBearerService.GenerateToken(user, secretKey));
+
+    return Results.Unauthorized();
+});
+
 app.MapPost("api/v1/user", async (CreateUserModel model, IUserRepository userRepository) =>
 {
     var user = await userRepository.Create(model);
 
     return Results.Created();
 })
+.RequireAuthorization()
 .WithName("CreateUser")
 .WithOpenApi();
+
+app.MapGet("api/v1/user", async (IUserRepository userRepository) =>
+{
+    var users = await userRepository.GetAll();
+
+    return Results.Ok(users);
+})
+.RequireAuthorization()
+.WithName("GetAll")
+.WithOpenApi();
+
+app.MapGet("api/v1/user/{id:guid}", async (Guid id, IUserRepository userRepository) =>
+{
+    var user = await userRepository.GetById(id);
+
+    return Results.Ok(user);
+})
+.RequireAuthorization()
+.WithName("GetById")
+.WithOpenApi();
+
 
 app.Run();
