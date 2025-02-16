@@ -9,11 +9,6 @@ public class User
     public DateTime UpdatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
 
-    public User()
-    {
-        // For EF
-    }
-
     public User(
         Guid id,
         string username,

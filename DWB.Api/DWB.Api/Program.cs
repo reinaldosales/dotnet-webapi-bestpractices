@@ -113,7 +113,7 @@ app.MapGet("api/v1/user/{username}", async (string username, IUserRepository use
         cancellationToken: cancellationToken
     );
 
-    if(user is not null)
+    if (user is not null)
         return Results.Ok(user);
 
     return Results.NotFound();
@@ -121,19 +121,5 @@ app.MapGet("api/v1/user/{username}", async (string username, IUserRepository use
 .RequireAuthorization()
 .WithName("GetById")
 .WithOpenApi();
-
-app.MapGet("api/v1/user/{username}", async (string username, IUserRepository userRepository, HybridCache cache, CancellationToken cancellationToken) =>
-{
-    var user = await cache.GetOrCreateAsync(
-        $"user-{username}",
-        async cancel => await userRepository.GetByUsername(username, cancel),
-        cancellationToken: cancellationToken
-    );
-
-    if (user is not null)
-        return Results.Ok(user);
-
-    return Results.NotFound();
-});
 
 app.Run();
