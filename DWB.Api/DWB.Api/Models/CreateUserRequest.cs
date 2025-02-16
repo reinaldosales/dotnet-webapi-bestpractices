@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DWB.Api.Models;
+﻿namespace DWB.Api.Models;
 
 public class CreateUserRequest
 {

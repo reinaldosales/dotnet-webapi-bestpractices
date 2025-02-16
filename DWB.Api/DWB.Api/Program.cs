@@ -9,15 +9,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Threading.Channels;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAllElasticApm();
 
-#pragma warning disable EXTEXP0018 // O tipo é apenas para fins de avaliação e está sujeito a alterações ou remoção em atualizações futuras. Suprima este diagnóstico para continuar.
+#pragma warning disable EXTEXP0018 // O tipo ï¿½ apenas para fins de avaliaï¿½ï¿½o e estï¿½ sujeito a alteraï¿½ï¿½es ou remoï¿½ï¿½o em atualizaï¿½ï¿½es futuras. Suprima este diagnï¿½stico para continuar.
 builder.Services.AddHybridCache();
-#pragma warning restore EXTEXP0018 // O tipo é apenas para fins de avaliação e está sujeito a alterações ou remoção em atualizações futuras. Suprima este diagnóstico para continuar.
+#pragma warning restore EXTEXP0018 // O tipo ï¿½ apenas para fins de avaliaï¿½ï¿½o e estï¿½ sujeito a alteraï¿½ï¿½es ou remoï¿½ï¿½o em atualizaï¿½ï¿½es futuras. Suprima este diagnï¿½stico para continuar.
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,8 +58,12 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "/openapi/{documentName}.json";
+    });
     app.UseSwaggerUI();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
