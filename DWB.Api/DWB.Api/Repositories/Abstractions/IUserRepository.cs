@@ -5,8 +5,8 @@ namespace DWB.Api.Repositories.Abstractions;
 
 public interface IUserRepository
 {
-    Task<User> Create(CreateUserRequest model);
-    Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize);
-    Task<User> GetById(Guid id);
-    Task<User> GetByUsername(string username);
+    Task<User> Create(CreateUserRequest model, CancellationToken cancellationToken = default);
+    Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize, CancellationToken cancellationToken = default);
+    Task<User> GetById(Guid id, CancellationToken cancellationToken = default);
+    Task<User> GetByUsername(string username, CancellationToken cancellationToken = default);
 }

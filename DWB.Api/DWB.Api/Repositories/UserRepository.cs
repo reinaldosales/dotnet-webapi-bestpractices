@@ -8,32 +8,32 @@ namespace DWB.Api.Repositories;
 
 public class UserRepository(AppDbContext appDbContext) : IUserRepository
 {
-    public AppDbContext _context { get; } = appDbContext;
+    public AppDbContext Context { get; } = appDbContext;
 
-    public async Task<User> Create(CreateUserRequest model)
+    public async Task<User> Create(CreateUserRequest model, CancellationToken cancellationToken = default)
     {
 
         var user = User.CreateUser(model.Username, model.Password);
 
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
+        await Context.Users.AddAsync(user, cancellationToken);
+        await Context.SaveChangesAsync(cancellationToken);
 
         return user;
     }
 
-    public async Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize)
-        => await _context.Users
+    public async Task<IEnumerable<User>> GetAll(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+        => await Context.Users
         .AsNoTracking()
         .Skip(pageIndex * pageSize)
         .Take(pageSize)
-        .ToListAsync();
+        .ToListAsync(cancellationToken);
 
-    public async Task<User> GetById(Guid id)
-        => await _context.Users
+    public async Task<User> GetById(Guid id, CancellationToken cancellationToken = default)
+        => await Context.Users
         .AsNoTracking()
-        .FirstOrDefaultAsync(x => x.Id == id);
+        .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public async Task<User> GetByUsername(string username)
-        => await _context.Users
-        .FirstOrDefaultAsync(x => x.Username == username);
+    public async Task<User> GetByUsername(string username, CancellationToken cancellationToken = default)
+        => await Context.Users
+        .FirstOrDefaultAsync(x => x.Username == username, cancellationToken);
 }
